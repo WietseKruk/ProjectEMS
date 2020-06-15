@@ -1,11 +1,20 @@
 ﻿using System;
-
+using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using System.Timers;
 using Android.App;
-using Android.Content.PM;
+using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
+using Android.Content.PM;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using Android.Graphics;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace CoffeeConnect.Droid
 {
@@ -23,11 +32,15 @@ namespace CoffeeConnect.Droid
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
         }
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+
+       
     }
 }
+    

@@ -6,13 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using System.Timers;
+using Xamarin.Forms.PlatformConfiguration;
+using CoffeeConnect;
 
+[assembly: Dependency(typeof(MainPage))]
 namespace CoffeeConnect
 {
     // Learn more about making custom code visible in the Xamarin.Forms previewer
     // by visiting https://aka.ms/xamarinforms-previewer
     [DesignTimeVisible(false)]
-    public partial class MainPage : ContentPage
+    public partial class MainPage : ContentPage, IUpdateGUI
     {
         public int count;
         public DateTime alarm;
@@ -21,6 +24,8 @@ namespace CoffeeConnect
             InitializeComponent();
             ShowTime();
             TimeCompare();
+
+            //DependencyService.Get<IWifiConnect>().ConnectToWifi(ip, port);
         }
 
         public void ShowTime()
@@ -79,7 +84,55 @@ namespace CoffeeConnect
                 return true;
             }
             else return false;
+        }
 
+        public void UpdateGUI(string result)
+        {
+            if (result == "OFF") ConnectingBox.TextColor = Color.Red;
+            else if (result == " ON") ConnectingBox.TextColor = Color.Green;
+            else ConnectingBox.TextColor = Color.Black;
+        }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            //Validate the user input (IP address and port)
+            if (DependencyService.Get<IWifiConnect>().CheckValidIpAddress(ipBox.Text) && DependencyService.Get<IWifiConnect>().CheckValidPort(portBox.Text))
+            {
+                DependencyService.Get<IWifiConnect>().ConnectToWifi(ipBox.Text, portBox.Text);
+            }
+            else ConnectingBox.Text = "Error";
+        }
+
+        public void UpdateConnectionState(int state, string text)
+        {
+            // connectButton
+            string butConText = "Connect";  // default text
+            bool butConEnabled = true;      // default state
+            Color color = Color.Red;        // default color
+            // pinButton
+
+            //Set "Connect" button label according to connection state.
+            if (state == 1)
+            {
+                butConText = "Please wait";
+                color = Color.Orange;
+                butConEnabled = false;
+            }
+            else
+            if (state == 2)
+            {
+                butConText = "Disconnect";
+                color = Color.Green;
+            }
+            //Edit the control's properties on the UI thread
+
+            ConnectingBox.Text = text;
+            if (butConText != null)  // text existst
+            {
+                ButConn.Text = butConText;
+                ConnectingBox.TextColor = color;
+                ButConn.IsVisible = butConEnabled;
+            }
         }
     }
 }
