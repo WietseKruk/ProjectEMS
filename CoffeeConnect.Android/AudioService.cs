@@ -3,6 +3,7 @@ using Xamarin.Forms;
 using CoffeeConnect.Droid;
 using Android.Media;
 using Android.Content.Res;
+using System.Linq.Expressions;
 
 [assembly: Dependency(typeof(AudioService))]
 namespace CoffeeConnect.Droid
@@ -22,7 +23,14 @@ namespace CoffeeConnect.Droid
 			{
 				player.Start();
 			};
-			player.SetDataSource(fd.FileDescriptor, fd.StartOffset, fd.Length);
+			try
+			{
+				player.SetDataSource(fd.FileDescriptor, fd.StartOffset, fd.Length);
+			}
+			catch
+			{
+
+			}
 			player.Prepare();
 		}
 
