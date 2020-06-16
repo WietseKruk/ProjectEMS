@@ -86,11 +86,17 @@ namespace CoffeeConnect
             else return false;
         }
 
-        public void UpdateGUI(string result)
+        public void UpdateGUI(string result, string textview)
         {
-            if (result == "OFF") ConnectingBox.TextColor = Color.Red;
-            else if (result == " ON") ConnectingBox.TextColor = Color.Green;
-            else ConnectingBox.TextColor = Color.Black;
+            if (result == "OFF")
+            {
+                TemperatureLable.Text = "OFF";
+            }
+            else if (result == " ON")
+            {
+                TemperatureLable.Text = textview;
+            }
+            else TemperatureLable.Text = "";
         }
 
         private void Button_Clicked(object sender, EventArgs e)

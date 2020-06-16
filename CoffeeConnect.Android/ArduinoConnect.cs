@@ -23,16 +23,8 @@ namespace CoffeeConnect.Droid
         Socket socket = null;
         Timer timerSockets;
 
-        List<Tuple<string>> commandList = new List<Tuple<string>>();  // List for commands and response places on UI
-        int listIndex = 0;
         public void ConnectToWifi(string ip, string port)
         {
-            //Init commandlist, scheduled by socket timer
-            // Wordt nu even niet gebruikt. Moet wel weer worden geimplementeerd.
-            commandList.Add(new Tuple<string>("s"));
-            commandList.Add(new Tuple<string>("a"));
-            // timer object, check Arduino state
-
             // Only one command can be serviced in an timer tick, schedule from list
             timerSockets = new System.Timers.Timer() { Interval = 1000, Enabled = false }; // Interval >= 750
             timerSockets.Elapsed += (obj, args) =>
@@ -40,16 +32,12 @@ namespace CoffeeConnect.Droid
 
                 if (socket != null) // only if socket exists
                 {
-                    DependencyService.Get<IUpdateGUI>().UpdateGUI(" ON");
                     // Send a command to the Arduino server on every tick (loop though list)
 
-                    string command = executeCommand("s");
-                    DependencyService.Get<IUpdateGUI>().UpdateGUI(command);
+                    string commandA = executeCommand("a");
+                    string commandS = executeCommand("s");
+                    DependencyService.Get<IUpdateGUI>().UpdateGUI(commandS, commandA);
 
-                    //Voorbeeld voor sturen van commands------------------------
-
-                    //UpdateGUI(executeCommand(commandList[listIndex].Item1), commandList[listIndex].Item2);  //e.g. UpdateGUI(executeCommand("s"), textViewChangePinStateValue);
-                    //if (++listIndex >= commandList.Count) listIndex = 0;
                 }
                 else timerSockets.Enabled = false;  // If socket broken -> disable timer
             };
