@@ -6,7 +6,7 @@ namespace CoffeeConnect
 {
     public interface IUpdateGUI
     {
-        void UpdateGUI(string Command);
+        void UpdateGUI(string Command, string text);
         void UpdateConnectionState(int state, string text);
     }
 }
