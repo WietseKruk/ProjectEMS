@@ -14,19 +14,22 @@ using Android.Views;
 using Android.Widget;
 using CoffeeConnect.Droid;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 [assembly: Dependency(typeof(ArduinoConnect))]
+
 namespace CoffeeConnect.Droid
 {
     public class ArduinoConnect : IWifiConnect
     {
         Socket socket = null;
         Timer timerSockets;
+        BindingVals bv = new BindingVals();
 
         public void ConnectToWifi(string ip, string port)
         {
-            // Only one command can be serviced in an timer tick, schedule from list
-            timerSockets = new System.Timers.Timer() { Interval = 1000, Enabled = false }; // Interval >= 750
+            //Only one command can be serviced in an timer tick, schedule from list
+           timerSockets = new System.Timers.Timer() { Interval = 1000, Enabled = false }; // Interval >= 750
             timerSockets.Elapsed += (obj, args) =>
             {
 
@@ -36,6 +39,7 @@ namespace CoffeeConnect.Droid
 
                     string commandA = executeCommand("a");
                     string commandS = executeCommand("s");
+                    //SetSensorValue(commandA);
                     DependencyService.Get<IUpdateGUI>().UpdateGUI(commandS, commandA);
 
                 }
@@ -141,6 +145,14 @@ namespace CoffeeConnect.Droid
                 else return false;
             }
             else return false;
+        }
+
+        private void SetSensorValue(string value)
+        {
+            //var binding_context = (BindingContext)
+
+
+            bv.MySensorValue = value;
         }
     }
 }

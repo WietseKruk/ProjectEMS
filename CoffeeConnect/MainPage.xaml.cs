@@ -8,8 +8,10 @@ using Xamarin.Forms;
 using System.Timers;
 using Xamarin.Forms.PlatformConfiguration;
 using CoffeeConnect;
+using System.Collections.ObjectModel;
 
 [assembly: Dependency(typeof(MainPage))]
+
 namespace CoffeeConnect
 {
     // Learn more about making custom code visible in the Xamarin.Forms previewer
@@ -17,8 +19,10 @@ namespace CoffeeConnect
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage, IUpdateGUI
     {
+        public BindingVals bv = new BindingVals();
         public int count;
         public DateTime alarm;
+
         public MainPage()
         {
             InitializeComponent();
@@ -88,15 +92,24 @@ namespace CoffeeConnect
 
         public void UpdateGUI(string result, string textview)
         {
-            if (result == "OFF")
-            {
-                TemperatureLable.Text = "OFF";
-            }
-            else if (result == " ON")
-            {
-                TemperatureLable.Text = textview;
-            }
-            else TemperatureLable.Text = "";
+            //if (result == "OFF")
+            //{
+            //    TempLabel.TextColor = Color.Red;
+            //    bv.MySensorValue = "OFF";
+            //}
+            //else if (result == " ON")
+            //{
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    bv.MySensorValue = textview;
+                    TempLabel.Text = bv.MySensorValue;
+                });
+
+
+                //TempLabel.Text = textview;
+                //bv.MySensorValue = textview;
+            //}
+            //else bv.MySensorValue = "";
         }
 
         private void Button_Clicked(object sender, EventArgs e)
@@ -131,14 +144,21 @@ namespace CoffeeConnect
                 color = Color.Green;
             }
             //Edit the control's properties on the UI thread
+            Device.BeginInvokeOnMainThread(() =>
+            ConnectingBox.Text = text
+            );
 
-            ConnectingBox.Text = text;
             if (butConText != null)  // text existst
             {
                 ButConn.Text = butConText;
                 ConnectingBox.TextColor = color;
                 ButConn.IsVisible = butConEnabled;
             }
+        }
+
+        public void SensorUpdate(string sensorVal)
+        {
+            TempLabel.Text = sensorVal;
         }
     }
 }
