@@ -36,46 +36,49 @@
 #define unitCodeActionNew 2210406   // replace with your own code
 
 // Include files.
+#include <Wire.h>
 #include <SPI.h>                  // Ethernet shield uses SPI-interface
 #include <Ethernet.h>             // Ethernet library (use Ethernet2.h for new ethernet shield v2)
-//#include <NewRemoteTransmitter.h> // Remote Control, Gamma, APA3
-//#include <RemoteTransmitter.h>    // Remote Control, Action, old model
-//#include <RCSwitch.h>           // Remote Control, Action, new model
+#include <Servo.h>                // Servo library
+#include <dht.h>
+#include <DHT.h>                  // DHT11 Temperature & Humidity sensor library
+#include <LiquidCrystal_I2C.h>    // I2C LCD library
 
 // Set Ethernet Shield MAC address  (check yours)
 byte mac[] = { 0x40, 0x6c, 0x8f, 0x36, 0x84, 0x8a }; // Ethernet adapter shield S. Oosterhaven
 int ethPort = 3300;                                  // Take a free port (check your router)
 
-#define RFPin        3  // output, pin to control the RF-sender (and Click-On Click-Off-device)
 #define lowPin       5  // output, always LOW
 #define highPin      6  // output, always HIGH
 #define switchPin    7  // input, connected to some kind of inputswitch
 #define ledPin       8  // output, led used for "connect state": blinking = searching; continuously = connected
 #define infoPin      9  // output, more information
-#define analogPin    0  // sensor value
+#define sensorPin    A0 //  Analog input pin (temp sensor)
+float sensorValue = 0;  // default sensor waarde
+bool on = false;
+bool done = false;
 
 EthernetServer server(ethPort);              // EthernetServer instance (listening on port <ethPort>).
-//NewRemoteTransmitter apa3Transmitter(unitCodeApa3, RFPin, 260, 3);  // APA3 (Gamma) remote, use pin <RFPin> 
-//ActionTransmitter actionTransmitter(RFPin);  // Remote Control, Action, old model (Impulse), use pin <RFPin>
-//RCSwitch mySwitch = RCSwitch();            // Remote Control, Action, new model (on-off), use pin <RFPin>
+Servo servo;                                 // Servo instantie
+dht DHT;                                    // DHT instantie
+LiquidCrystal_I2C lcd(0x27, 16, 2);          // 16 bij 2 LCD scherm instantie
 
-char actionDevice = 'A';                 // Variable to store Action Device id ('A', 'B', 'C')
 bool pinState = false;                   // Variable to store actual pin state
 bool pinChange = false;                  // Variable to store actual pin change
-int  sensorValue = 0;                    // Variable to store actual sensor value
+                   
+void DisplayLcd(char t = 'i');
 
 void setup()
 {
    Serial.begin(9600);
    //while (!Serial) { ; }               // Wait for serial port to connect. Needed for Leonardo only.
 
-   Serial.println("Domotica project, Arduino Domotica Server\n");
+   Serial.println("Domotica project, CoffeeConnect Server\n");
    
    //Init I/O-pins
    pinMode(switchPin, INPUT);            // hardware switch, for changing pin state
    pinMode(lowPin, OUTPUT);
    pinMode(highPin, OUTPUT);
-   pinMode(RFPin, OUTPUT);
    pinMode(ledPin, OUTPUT);
    pinMode(infoPin, OUTPUT);
    
@@ -83,10 +86,13 @@ void setup()
    digitalWrite(switchPin, HIGH);        // Activate pullup resistors (needed for input pin)
    digitalWrite(lowPin, LOW);
    digitalWrite(highPin, HIGH);
-   digitalWrite(RFPin, LOW);
    digitalWrite(ledPin, LOW);
    digitalWrite(infoPin, LOW);
 
+    servo.attach(9);
+    servo.write(0);
+    lcd.init();
+    lcd.backlight();
    //Try to get an IP address from the DHCP server.
    if (Ethernet.begin(mac) == 0)
    {
@@ -116,30 +122,31 @@ void setup()
 
 void loop()
 {
-   // Listen for incomming connection (app)
+    // Listen for incomming connection (app)
    EthernetClient ethernetClient = server.available();
    if (!ethernetClient) {
       blink(ledPin);
+      DisplayLcd('i');
+      delay(1000);
       return; // wait for connection and blink LED
    }
 
    Serial.println("Application connected");
    digitalWrite(ledPin, LOW);
+   DisplayLcd('d');
+   delay(2000);
 
    // Do what needs to be done while the socket is connected.
    while (ethernetClient.connected()) 
    {
-      checkEvent(switchPin, pinState);          // update pin state
-      sensorValue = readSensor(A0, 100);         // update sensor value
+      
         
       // Activate pin based op pinState
       if (pinChange) {
-         if (pinState) { digitalWrite(ledPin, HIGH); switchDefault(true); }
-         else { switchDefault(false); digitalWrite(ledPin, LOW); }
+         if (pinState) { digitalWrite(ledPin, HIGH); }
+         else {  digitalWrite(ledPin, LOW); }
          pinChange = false;
       }
-
-      
    
       // Execute when byte is received.
       while (ethernetClient.available())
@@ -147,21 +154,12 @@ void loop()
          char inByte = ethernetClient.read();   // Get byte from the client.
          executeCommand(inByte);                // Wait for command to execute
          inByte = NULL;                         // Reset the read byte.
+         delay(2000);
       } 
    }
    Serial.println("Application disonnected");
 }
 
-// Choose and switch your Kaku device, state is true/false (HIGH/LOW)
-void switchDefault(bool state)
-{   
-//   apa3Transmitter.sendUnit(0, state);          // APA3 Kaku (Gamma)                
-   delay(100);
-//   actionTransmitter.sendSignal(unitCodeActionOld, actionDevice, state);  // Action Kaku, old model
-   delay(100);
-   //mySwitch.send(2210410 + state, 24);  // tricky, false = 0, true = 1  // Action Kaku, new model
-   delay(100);
-}
 
 // Implementation of (simple) protocol between app and Arduino
 // Request (from app) is single char ('a', 's', 't', 'i' etc.)
@@ -177,11 +175,6 @@ void executeCommand(char cmd)
             intToCharBuf(sensorValue, buf, 4);                // convert to charbuffer
             server.write(buf, 4);                             // response is always 4 chars (\n included)
             Serial.print("Sensor: "); Serial.println(buf);
-            if(sensorValue > 20){
-              digitalWrite(RFPin, LOW);
-            }else{
-              digitalWrite(RFPin, HIGH);
-            }
             break;
          case 's': // Report switch state to the app
             if (pinState) { server.write(" ON\n"); Serial.println("Pin state is ON"); }  // always send 4 chars
@@ -200,10 +193,74 @@ void executeCommand(char cmd)
          }
 }
 
+
+void DisplayLcd(char t = 'i'){
+
+  
+  switch (t){
+    case 'i':
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(Ethernet.localIP());
+    break;
+    case 'a':
+      //laat vergaande tijd zien    
+      lcd.clear();
+      DHT.read11(sensorPin);
+      lcd.print("Temperatuur: ");
+      lcd.print(DHT.temperature);
+      delay(2000);
+      
+    break;
+    case 'k':
+      lcd.clear();
+      lcd.print("Koffie is klaar :D");
+      lcd.setCursor(0, 1);
+      DHT.read11(sensorPin);
+      lcd.print("Temperatuur: ");
+      lcd.print(DHT.temperature);
+      delay(2000);
+    
+    break;
+    case 'd':
+    //Laat Tijd zien!!
+      lcd.clear();
+      DHT.read11(sensorPin);
+      lcd.print("Temp: ");
+      lcd.print(DHT.temperature);
+      lcd.print((char)223);
+      lcd.print("C");
+      delay(3000);
+    
+    break;
+  }
+}
+
+void OnOff(){
+  if (!on){
+    done = false;
+    on = true;
+    DisplayLcd('a');
+    ServoOn();
+  }
+  else if(on && done){
+    DisplayLcd('k');
+    ServoOn();
+    on = false;
+  }
+}
+
+void ServoOn(){
+  servo.write(40);
+  delay(300);
+  servo.write(0);
+  delay(3000);
+}
 // read value from pin pn, return value is mapped between 0 and mx-1
 int readSensor(int pn, int mx)
 {
-  return map(analogRead(pn), 0, 1023, 0, mx-1);    
+  return map(analogRead(pn), 0, 1023, 0, mx-1);  
+  Serial.println(analogRead(pn));
 }
 
 // Convert int <val> char buffer with length <len>
@@ -217,29 +274,7 @@ void intToCharBuf(int val, char buf[], int len)
    s.toCharArray(buf, len);                // convert string to char-buffer
 }
 
-// Check switch level and determine if an event has happend
-// event: low -> high or high -> low
-void checkEvent(int p, bool &state)
-{
-   static bool swLevel = false;       // Variable to store the switch level (Low or High)
-   static bool prevswLevel = false;   // Variable to store the previous switch level
 
-   swLevel = digitalRead(p);
-   if (swLevel)
-      if (prevswLevel) delay(1);
-      else {               
-         prevswLevel = true;   // Low -> High transition
-         state = true;
-         pinChange = true;
-      } 
-   else // swLevel == Low
-      if (!prevswLevel) delay(1);
-      else {
-         prevswLevel = false;  // High -> Low transition
-         state = false;
-         pinChange = true;
-      }
-}
 
 // blink led on pin <pn>
 void blink(int pn)
