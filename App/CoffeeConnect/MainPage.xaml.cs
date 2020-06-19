@@ -148,7 +148,6 @@ namespace CoffeeConnect
                 butConText = "Disconnect";
                 color = Color.Green;
             }
-            
 
             if (butConText != null)  // text existst
             {
