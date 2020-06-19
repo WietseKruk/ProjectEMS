@@ -126,7 +126,6 @@ namespace CoffeeConnect
             {
                 DependencyService.Get<IWifiConnect>().ConnectToWifi(ipBox.Text, portBox.Text);
             }
-            else ConnectingBox.Text = "Error";
         }
 
         public void UpdateConnectionState(int state, string text)
@@ -150,15 +149,10 @@ namespace CoffeeConnect
                 butConText = "Disconnect";
                 color = Color.Green;
             }
-            //Edit the control's properties on the UI thread
-            Device.BeginInvokeOnMainThread(() =>
-            ConnectingBox.Text = text
-            );
 
             if (butConText != null)  // text existst
             {
                 ButConn.Text = butConText;
-                ConnectingBox.TextColor = color;
                 ButConn.IsVisible = butConEnabled;
             }
         }
