@@ -63,11 +63,10 @@ namespace CoffeeConnect
                 {
                     if(xamlSwitch.IsToggled == true)
                     {
-                        DependencyService.Get<IWifiConnect>().executeCommand("Letter van command");
+                        DependencyService.Get<IWifiConnect>().executeCommand("t");
                     }
                     AlarmText.Text = "De koffie staat klaar!";
                     DependencyService.Get<IAudio>().PlayAudioFile("Alarm.mp3");
-                    //waar is T???????????????????????????????????????????????????????????????????????????? bruh_moment_sound_effect_#3.mp3
                     return false;
                 }
                 else
@@ -126,7 +125,6 @@ namespace CoffeeConnect
             {
                 DependencyService.Get<IWifiConnect>().ConnectToWifi(ipBox.Text, portBox.Text);
             }
-            else ConnectingBox.Text = "Error";
         }
 
         public void UpdateConnectionState(int state, string text)
@@ -150,15 +148,11 @@ namespace CoffeeConnect
                 butConText = "Disconnect";
                 color = Color.Green;
             }
-            //Edit the control's properties on the UI thread
-            Device.BeginInvokeOnMainThread(() =>
-            ConnectingBox.Text = text
-            );
+            
 
             if (butConText != null)  // text existst
             {
                 ButConn.Text = butConText;
-                ConnectingBox.TextColor = color;
                 ButConn.IsVisible = butConEnabled;
             }
         }
