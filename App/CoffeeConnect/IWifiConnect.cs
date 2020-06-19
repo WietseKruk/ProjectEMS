@@ -9,5 +9,6 @@ namespace CoffeeConnect
        void ConnectToWifi(string ip, string port);
        bool CheckValidIpAddress(string ip);
        bool CheckValidPort(string port);
+       string executeCommand(string cmd);
     }
 }
