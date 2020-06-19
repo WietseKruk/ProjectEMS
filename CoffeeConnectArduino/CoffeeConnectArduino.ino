@@ -76,7 +76,7 @@ void setup()
 {
    Serial.begin(9600);
    //while (!Serial) { ; }               // Wait for serial port to connect. Needed for Leonardo only.
-
+   delay(2000);
    Serial.println("Domotica project, CoffeeConnect Server\n");
    
    //Init I/O-pins
@@ -187,10 +187,10 @@ void executeCommand(char cmd)
             if (pinState) { server.write(" ON\n"); Serial.println("Pin state is ON"); }  // always send 4 chars
             else { server.write("OFF\n"); Serial.println("Pin state is OFF"); }
             break;
-         case 't': // Toggle state; If state is already ON then turn it OFF
-            if (pinState) { pinState = false; Serial.println("Set pin state to \"OFF\""); }
-            else { pinState = true; Serial.println("Set pin state to \"ON\""); }  
-            pinChange = true; 
+         case 't': //Zet koffieapparaat aan/uit
+            Serial.println("showtime");
+            OnOff();
+            
             break;
          case 'i':    
             digitalWrite(infoPin, HIGH);
@@ -254,7 +254,6 @@ void DisplayLcd(char t = 'i'){
       lcd.print("C");
       lcd.setCursor(0,1);
       lcd.print(rtc.getTimeStr());
-      Serial.println("showtime");
       delay(1500);
     
     break;
@@ -279,7 +278,6 @@ void ServoOn(){
   servo.write(40);
   delay(300);
   servo.write(0);
-  delay(3000);
 }
 // read value from pin pn, return value is mapped between 0 and mx-1
 int readSensor(int pn, int mx)
