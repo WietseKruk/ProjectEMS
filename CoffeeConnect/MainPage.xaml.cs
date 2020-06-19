@@ -22,6 +22,9 @@ namespace CoffeeConnect
         public BindingVals bv = new BindingVals();
         public int count;
         public DateTime alarm;
+        public string sensortje = "geen sensorwaarde gevonden";
+        
+
 
         public MainPage()
         {
@@ -58,6 +61,10 @@ namespace CoffeeConnect
                 bool CheckTime = TimeCompare();
                 if (CheckTime)
                 {
+                    if(xamlSwitch.IsToggled == true)
+                    {
+                        DependencyService.Get<IWifiConnect>().executeCommand("Letter van command");
+                    }
                     AlarmText.Text = "De koffie staat klaar!";
                     DependencyService.Get<IAudio>().PlayAudioFile("Alarm.mp3");
                     return false;
@@ -90,7 +97,7 @@ namespace CoffeeConnect
             else return false;
         }
 
-        public void UpdateGUI(string result, string textview)
+        public void UpdateGUI(string textview)
         {
             //if (result == "OFF")
             //{
@@ -101,8 +108,7 @@ namespace CoffeeConnect
             //{
                 Device.BeginInvokeOnMainThread(() =>
                 {
-                    bv.MySensorValue = textview;
-                    TempLabel.Text = bv.MySensorValue;
+                    TempLabel.Text = textview;
                 });
 
 
@@ -159,6 +165,10 @@ namespace CoffeeConnect
         public void SensorUpdate(string sensorVal)
         {
             TempLabel.Text = sensorVal;
+        }
+        private void Koffieswitch(object sender, EventArgs e)
+        {
+           
         }
     }
 }
