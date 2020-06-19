@@ -43,6 +43,7 @@
 #include <dht.h>
 #include <DHT.h>                  // DHT11 Temperature & Humidity sensor library
 #include <LiquidCrystal_I2C.h>    // I2C LCD library
+#include <DS3231.h>
 
 // Set Ethernet Shield MAC address  (check yours)
 byte mac[] = { 0x40, 0x6c, 0x8f, 0x36, 0x84, 0x8a }; // Ethernet adapter shield S. Oosterhaven
@@ -57,22 +58,25 @@ int ethPort = 3300;                                  // Take a free port (check 
 float sensorValue = 0;  // default sensor waarde
 bool on = false;
 bool done = false;
+bool showTime = false;
 
 EthernetServer server(ethPort);              // EthernetServer instance (listening on port <ethPort>).
 Servo servo;                                 // Servo instantie
 dht DHT;                                    // DHT instantie
 LiquidCrystal_I2C lcd(0x27, 16, 2);          // 16 bij 2 LCD scherm instantie
+DS3231  rtc(A1, A2);
 
 bool pinState = false;                   // Variable to store actual pin state
 bool pinChange = false;                  // Variable to store actual pin change
                    
 void DisplayLcd(char t = 'i');
+String timeList[3];
 
 void setup()
 {
    Serial.begin(9600);
    //while (!Serial) { ; }               // Wait for serial port to connect. Needed for Leonardo only.
-
+   delay(2000);
    Serial.println("Domotica project, CoffeeConnect Server\n");
    
    //Init I/O-pins
@@ -91,8 +95,11 @@ void setup()
 
     servo.attach(9);
     servo.write(0);
+    rtc.begin();
     lcd.init();
     lcd.backlight();
+
+    
    //Try to get an IP address from the DHCP server.
    if (Ethernet.begin(mac) == 0)
    {
@@ -133,7 +140,6 @@ void loop()
 
    Serial.println("Application connected");
    digitalWrite(ledPin, LOW);
-   DisplayLcd('d');
    delay(2000);
 
    // Do what needs to be done while the socket is connected.
@@ -152,9 +158,10 @@ void loop()
       while (ethernetClient.available())
       {
          char inByte = ethernetClient.read();   // Get byte from the client.
+         DisplayLcd('d');
          executeCommand(inByte);                // Wait for command to execute
          inByte = NULL;                         // Reset the read byte.
-         delay(2000);
+         delay(500);
       } 
    }
    Serial.println("Application disonnected");
@@ -180,10 +187,10 @@ void executeCommand(char cmd)
             if (pinState) { server.write(" ON\n"); Serial.println("Pin state is ON"); }  // always send 4 chars
             else { server.write("OFF\n"); Serial.println("Pin state is OFF"); }
             break;
-         case 't': // Toggle state; If state is already ON then turn it OFF
-            if (pinState) { pinState = false; Serial.println("Set pin state to \"OFF\""); }
-            else { pinState = true; Serial.println("Set pin state to \"ON\""); }  
-            pinChange = true; 
+         case 't': //Zet koffieapparaat aan/uit
+            Serial.println("showtime");
+            OnOff();
+            
             break;
          case 'i':    
             digitalWrite(infoPin, HIGH);
@@ -191,6 +198,20 @@ void executeCommand(char cmd)
          default:
             digitalWrite(infoPin, LOW);
          }
+}
+
+//extra line
+
+
+void parseTime() {
+  String timestring = rtc.getTimeStr();
+  Serial.print(timestring);
+  
+  if(timestring != "") {
+    timeList[0] = (timestring.substring(0, 2));
+    timeList[1] = (timestring.substring(3, 5));
+    timeList[2] = (timestring.substring(6, 8));
+  }
 }
 
 
@@ -202,6 +223,7 @@ void DisplayLcd(char t = 'i'){
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print(Ethernet.localIP());
+      
     break;
     case 'a':
       //laat vergaande tijd zien    
@@ -227,10 +249,12 @@ void DisplayLcd(char t = 'i'){
       lcd.clear();
       DHT.read11(sensorPin);
       lcd.print("Temp: ");
-      lcd.print(DHT.temperature);
+      lcd.print(int(DHT.temperature));
       lcd.print((char)223);
       lcd.print("C");
-      delay(3000);
+      lcd.setCursor(0,1);
+      lcd.print(rtc.getTimeStr());
+      delay(1500);
     
     break;
   }
@@ -254,7 +278,6 @@ void ServoOn(){
   servo.write(40);
   delay(300);
   servo.write(0);
-  delay(3000);
 }
 // read value from pin pn, return value is mapped between 0 and mx-1
 int readSensor(int pn, int mx)
