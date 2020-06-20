@@ -7,7 +7,8 @@ namespace CoffeeConnect
 {
     public interface IUpdateGUI
     {
+        //Wordt niet meer gebruikt
         void UpdateGUI(string text);
-        void UpdateConnectionState(int state, string text);
+        void UpdateConnectionState();
     }
 }

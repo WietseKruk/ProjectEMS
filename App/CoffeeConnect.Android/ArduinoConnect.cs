@@ -48,14 +48,13 @@ namespace CoffeeConnect.Droid
 
             if (socket == null) // create new socket
             {
-                DependencyService.Get<IUpdateGUI>().UpdateConnectionState(1, "Connecting...");
+                //DependencyService.Get<IUpdateGUI>().UpdateConnectionState(1, "Connecting...");
                 try  // to connect to the server (Arduino).
                 {
                     socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     socket.Connect(new IPEndPoint(IPAddress.Parse(ip), Convert.ToInt32(port)));
                     if (socket.Connected)
                     {
-                        DependencyService.Get<IUpdateGUI>().UpdateConnectionState(2, "Connected");
                         timerSockets.Enabled = true; //Activate timer for communication with Arduino     
                     }
                 }
@@ -67,14 +66,12 @@ namespace CoffeeConnect.Droid
                         socket.Close();
                         socket = null;
                     }
-                    DependencyService.Get<IUpdateGUI>().UpdateConnectionState(4, exception.Message);
                 }
             }
             else // disconnect socket
             {
                 socket.Close(); socket = null;
                 timerSockets.Enabled = false;
-                DependencyService.Get<IUpdateGUI>().UpdateConnectionState(4, "Disconnected");
             }
         }
 
@@ -107,7 +104,6 @@ namespace CoffeeConnect.Droid
                         socket.Close();
                         socket = null;
                     }
-                    DependencyService.Get<IUpdateGUI>().UpdateConnectionState(3, result);
                 }
             }
             return result;
@@ -144,14 +140,6 @@ namespace CoffeeConnect.Droid
                 else return false;
             }
             else return false;
-        }
-
-        private void SetSensorValue(string value)
-        {
-            //var binding_context = (BindingContext)
-
-
-            bv.MySensorValue = value;
         }
     }
 }

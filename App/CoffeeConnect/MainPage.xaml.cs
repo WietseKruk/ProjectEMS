@@ -17,14 +17,14 @@ namespace CoffeeConnect
     // Learn more about making custom code visible in the Xamarin.Forms previewer
     // by visiting https://aka.ms/xamarinforms-previewer
     [DesignTimeVisible(false)]
-    public partial class MainPage : ContentPage, IUpdateGUI
+    public partial class MainPage : ContentPage
     {
         public BindingVals bv = new BindingVals();
         public int count;
         public DateTime alarm;
         public string sensortje = "geen sensorwaarde gevonden";
+        public bool connectedCheck = false;
         
-
 
         public MainPage()
         {
@@ -88,6 +88,10 @@ namespace CoffeeConnect
         {
 
             DateTime now = DateTime.Now;
+            if(xamlSwitch.IsToggled == false)
+            {
+                AlarmText.Text = Convert.ToString("Je wekker gaat af zonder koffie om " + alarm.ToString("HH:mm"));
+            }else
             AlarmText.Text = Convert.ToString("Je koffie staat klaar om " + alarm.ToString("HH:mm"));
 
             if (now.Hour == alarm.Hour && now.Minute == alarm.Minute)
@@ -97,72 +101,20 @@ namespace CoffeeConnect
             else return false;
         }
 
-        public void UpdateGUI(string textview)
-        {
-            //if (result == "OFF")
-            //{
-            //    TempLabel.TextColor = Color.Red;
-            //    bv.MySensorValue = "OFF";
-            //}
-            //else if (result == " ON")
-            //{
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    TempLabel.Text = textview;
-                });
-
-
-                //TempLabel.Text = textview;
-                //bv.MySensorValue = textview;
-            //}
-            //else bv.MySensorValue = "";
-        }
-
         private void Button_Clicked(object sender, EventArgs e)
         {
             //Validate the user input (IP address and port)
             if (DependencyService.Get<IWifiConnect>().CheckValidIpAddress(ipBox.Text) && DependencyService.Get<IWifiConnect>().CheckValidPort(portBox.Text))
             {
                 DependencyService.Get<IWifiConnect>().ConnectToWifi(ipBox.Text, portBox.Text);
+                if(connectedCheck == true)
+                IsConnected.IsVisible = false;
             }
         }
 
-        public void UpdateConnectionState(int state, string text)
-        {
-            // connectButton
-            string butConText = "Connect";  // default text
-            bool butConEnabled = true;      // default state
-            Color color = Color.Red;        // default color
-            // pinButton
-
-            //Set "Connect" button label according to connection state.
-            if (state == 1)
-            {
-                butConText = "Please wait";
-                color = Color.Orange;
-                butConEnabled = false;
-            }
-            else
-            if (state == 2)
-            {
-                butConText = "Disconnect";
-                color = Color.Green;
-            }
-
-            if (butConText != null)  // text existst
-            {
-                ButConn.Text = butConText;
-                ButConn.IsVisible = butConEnabled;
-            }
-        }
-
-        public void SensorUpdate(string sensorVal)
-        {
-            TempLabel.Text = sensorVal;
-        }
         private void Koffieswitch(object sender, EventArgs e)
         {
-           
+
         }
     }
 }

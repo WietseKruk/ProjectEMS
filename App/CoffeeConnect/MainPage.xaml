@@ -10,14 +10,16 @@
         <local:BindingVals/>
     </ContentPage.BindingContext>
     <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="1">
-            <Entry Text="192.168.0.108" FontSize="20" WidthRequest="140" x:Name="ipBox" Keyboard="Numeric"></Entry>
-            <Label Text="-" FontSize="30"></Label>
-            <Entry Text="3300" FontSize="20" WidthRequest="100" x:Name="portBox" Keyboard="Numeric"></Entry>
-        </StackLayout>
-        <StackLayout HorizontalOptions="Center">
-            <Button Text="Connect" Clicked="Button_Clicked" x:Name="ButConn"></Button>
-            <Label x:Name="TempLabel" TextColor="Black" FontSize="23"></Label>
+        <StackLayout x:Name="IsConnected" IsVisible="true">
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="1">
+                <Entry Text="192.168.1.49" FontSize="20" WidthRequest="140" x:Name="ipBox" Keyboard="Numeric"></Entry>
+                <Label Text="-" FontSize="30"></Label>
+                <Entry Text="3300" FontSize="20" WidthRequest="100" x:Name="portBox" Keyboard="Numeric"></Entry>
+            </StackLayout>
+            <StackLayout HorizontalOptions="Center">
+                <Button Text="Connect" Clicked="Button_Clicked" x:Name="ButConn"></Button>
+                <Label x:Name="TempLabel" TextColor="Black" FontSize="23"></Label>
+            </StackLayout>
         </StackLayout>
 
 
@@ -25,6 +27,7 @@
         <Grid x:Name="SetAlarmTime" HorizontalOptions="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="20"/>
+                <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="0">
@@ -37,8 +40,7 @@
                 <Label Text=":" FontSize="30"></Label>
                 <Entry Text="" FontSize="20" WidthRequest="30" MaxLength="2" x:Name="MinutesBox" Keyboard="Numeric"></Entry>
             </StackLayout>
-        </Grid>
-        <StackLayout>
+            <StackLayout Grid.Row="2">
             <Label x:Name="switchStateLabel"
                   Text="Wilt u koffie bij het opstaan?"
                   VerticalOptions="CenterAndExpand"
@@ -51,6 +53,7 @@
                    VerticalOptions="CenterAndExpand"
                    HorizontalOptions="CenterAndExpand"/>
         </StackLayout>
+        </Grid>
         <Button Text="START" BackgroundColor="Transparent" x:Name="StartAlarm" Clicked="StartAlarm_Clicked"></Button>
         <Label x:Name="AlarmText" Text="" FontSize="15" HorizontalOptions="Center" IsVisible="False"></Label>
         <Button Text="STOP" BackgroundColor="Transparent" x:Name="StopAlarm" IsVisible="False" Clicked="StopAlarm_OFF"></Button>
