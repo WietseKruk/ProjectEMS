@@ -94,7 +94,7 @@ namespace CoffeeConnect
             }else
             AlarmText.Text = Convert.ToString("Je koffie staat klaar om " + alarm.ToString("HH:mm"));
 
-            if (now.Hour == alarm.Hour && now.Minute == alarm.Minute)
+            if (now.Hour == alarm.Hour && now.Minute == alarm.Minute && now.Second == alarm.Second)
             {
                 return true;
             }
