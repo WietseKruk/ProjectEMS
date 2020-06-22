@@ -106,15 +106,38 @@ namespace CoffeeConnect
             //Validate the user input (IP address and port)
             if (DependencyService.Get<IWifiConnect>().CheckValidIpAddress(ipBox.Text) && DependencyService.Get<IWifiConnect>().CheckValidPort(portBox.Text))
             {
-                DependencyService.Get<IWifiConnect>().ConnectToWifi(ipBox.Text, portBox.Text);
-                if(connectedCheck == true)
-                IsConnected.IsVisible = false;
+                try
+                {
+                    DependencyService.Get<IWifiConnect>().ConnectToWifi(ipBox.Text, portBox.Text);
+                    connectedCheck = true;
+                }catch
+                {
+                    connectedCheck = false;
+                }
+
+                if (connectedCheck == true)
+                {
+                    IsConnected.IsVisible = false;
+                    notConnected.IsVisible = true;
+                }
+
+                else
+                    IsConnected.IsVisible = true;
+                    notConnected.IsVisible = true;
             }
+        }
+
+        private void Disconnect_Button_Clicked(object sender, EventArgs e)
+        {
+            notConnected.IsVisible = false;
+            IsConnected.IsVisible = true;
+            connectedCheck = false;
         }
 
         private void Koffieswitch(object sender, EventArgs e)
         {
 
         }
+
     }
 }

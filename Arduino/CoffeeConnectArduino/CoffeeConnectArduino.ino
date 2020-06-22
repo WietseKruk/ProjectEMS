@@ -156,9 +156,9 @@ void loop()
    
       // Execute when byte is received.
       while (ethernetClient.available())
-      {
-         char inByte = ethernetClient.read();   // Get byte from the client.
-         DisplayLcd('d');
+      {  
+        //DisplayLcd('d');
+         char inByte = ethernetClient.read();   // Get byte from the client. 
          executeCommand(inByte);                // Wait for command to execute
          inByte = NULL;                         // Reset the read byte.
          delay(500);
@@ -189,7 +189,8 @@ void executeCommand(char cmd)
             break;
          case 't': //Zet koffieapparaat aan/uit
             Serial.println("showtime");
-            OnOff();
+//            OnOff();
+              ServoOn();
             
             break;
          case 'i':    
@@ -278,6 +279,7 @@ void ServoOn(){
   servo.write(40);
   delay(300);
   servo.write(0);
+  delay(300);
 }
 // read value from pin pn, return value is mapped between 0 and mx-1
 int readSensor(int pn, int mx)
