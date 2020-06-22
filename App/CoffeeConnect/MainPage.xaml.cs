@@ -53,8 +53,8 @@ namespace CoffeeConnect
             int min = Convert.ToInt32(MinutesBox.Text);
             if (min == 00)
             {
-                hours = hours - 1;
-                min = min + 59;
+                hours -= 1;
+                min += 59;
             }
             else
             {

@@ -144,16 +144,7 @@ void loop()
 
    // Do what needs to be done while the socket is connected.
    while (ethernetClient.connected()) 
-   {
-      
-        
-      // Activate pin based op pinState
-      if (pinChange) {
-         if (pinState) { digitalWrite(ledPin, HIGH); }
-         else {  digitalWrite(ledPin, LOW); }
-         pinChange = false;
-      }
-   
+   {   
       // Execute when byte is received.
       while (ethernetClient.available())
       {  
@@ -176,25 +167,20 @@ void executeCommand(char cmd)
          char buf[4] = {'\0', '\0', '\0', '\0'};
 
          // Command protocol
-         Serial.print("["); Serial.print(cmd); Serial.print("] -> ");
+         //Serial.print("["); Serial.print(cmd); Serial.print("] -> ");
          switch (cmd) {
-         case 'a': // Report sensor value to the app  
-            intToCharBuf(sensorValue, buf, 4);                // convert to charbuffer
+         /*case 'a': // Report sensor value to the app  
+            intToCharBuf(66.6, buf, 4);                // convert to charbuffer
             server.write(buf, 4);                             // response is always 4 chars (\n included)
             Serial.print("Sensor: "); Serial.println(buf);
-            break;
-         case 's': // Report switch state to the app
-            if (pinState) { server.write(" ON\n"); Serial.println("Pin state is ON"); }  // always send 4 chars
-            else { server.write("OFF\n"); Serial.println("Pin state is OFF"); }
-            break;
+            break;*/
          case 't': //Zet koffieapparaat aan/uit
+            intToCharBuf(sensorValue, buf, 4);                // convert to charbuffer
+            server.write(buf, 4);
             Serial.println("showtime");
-//            OnOff();
-              ServoOn();
+//          OnOff();
+            ServoOn();
             
-            break;
-         case 'i':    
-            digitalWrite(infoPin, HIGH);
             break;
          default:
             digitalWrite(infoPin, LOW);
