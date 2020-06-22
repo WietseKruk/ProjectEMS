@@ -150,9 +150,11 @@ void loop()
       {  
         //DisplayLcd('d');
          char inByte = ethernetClient.read();   // Get byte from the client. 
-         executeCommand(inByte);                // Wait for command to execute
+         if(inByte != NULL) 
+          executeCommand(inByte);                // Wait for command to execute
          inByte = NULL;                         // Reset the read byte.
          delay(500);
+         
       } 
    }
    Serial.println("Application disonnected");
@@ -175,15 +177,12 @@ void executeCommand(char cmd)
             Serial.print("Sensor: "); Serial.println(buf);
             break;*/
          case 't': //Zet koffieapparaat aan/uit
-            intToCharBuf(sensorValue, buf, 4);                // convert to charbuffer
-            server.write(buf, 4);
             Serial.println("showtime");
 //          OnOff();
             ServoOn();
-            
             break;
          default:
-            digitalWrite(infoPin, LOW);
+            Serial.println("default");
          }
 }
 

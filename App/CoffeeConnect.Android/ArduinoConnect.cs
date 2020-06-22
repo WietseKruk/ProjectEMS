@@ -36,11 +36,7 @@ namespace CoffeeConnect.Droid
                 if (socket != null) // only if socket exists
                 {
                     // Send a command to the Arduino server on every tick (loop though list)
-
-                    string commandA = executeCommand("a");
-                    //SetSensorValue(commandA);
-                    DependencyService.Get<IUpdateGUI>().UpdateGUI(commandA);
-
+                    executeCommand("i"); // initialize connection
                 }
                 else timerSockets.Enabled = false;  // If socket broken -> disable timer
             };
