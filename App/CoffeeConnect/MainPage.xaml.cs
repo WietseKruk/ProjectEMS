@@ -62,7 +62,7 @@ namespace CoffeeConnect
             {
                 if (timerStop)
                 {
-                    timerStop = false;
+                    return false;
                 }
 
                 bool CheckTime = TimeCompare();
