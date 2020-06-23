@@ -51,16 +51,7 @@ namespace CoffeeConnect
         {
             int hours = Convert.ToInt32(HoursBox.Text);
             int min = Convert.ToInt32(MinutesBox.Text);
-            if (min == 00)
-            {
-                hours -= 1;
-                min += 59;
-            }
-            else
-            {
-                min = min - 1;
-            }
-            alarm = new DateTime(2020, 6, 11, hours, min, 50);
+            alarm = new DateTime(2020, 6, 11, hours, min, 0);
             StartAlarm.IsVisible = false;
             StopAlarm.IsVisible = true;
             SetAlarmTime.IsVisible = false;

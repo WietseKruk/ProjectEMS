@@ -82,25 +82,27 @@ namespace CoffeeConnect.Droid
                 //Send command to server
                 socket.Send(Encoding.ASCII.GetBytes(cmd));
 
-                try //Get response from server
-                {
-                    //Store received bytes (always 4 bytes, ends with \n)
-                    bytesRead = socket.Receive(buffer);  // If no data is available for reading, the Receive method will block until data is available,
-                    //Read available bytes.              // socket.Available gets the amount of data that has been received from the network and is available to be read
-                    while (socket.Available > 0) bytesRead = socket.Receive(buffer);
-                    if (bytesRead == 4)
-                        result = Encoding.ASCII.GetString(buffer, 0, bytesRead - 1); // skip \n
-                    else result = "err";
-                }
-                catch (Exception exception)
-                {
-                    result = exception.ToString();
-                    if (socket != null)
-                    {
-                        socket.Close();
-                        socket = null;
-                    }
-                }
+
+                // wij returnen niks atm in verband met crashes en stabiliteit
+                //try //Get response from server
+                //{
+                //    //Store received bytes (always 4 bytes, ends with \n)
+                //    bytesRead = socket.Receive(buffer);  // If no data is available for reading, the Receive method will block until data is available,
+                //    //Read available bytes.              // socket.Available gets the amount of data that has been received from the network and is available to be read
+                //    while (socket.Available > 0) bytesRead = socket.Receive(buffer);
+                //    if (bytesRead == 4)
+                //        result = Encoding.ASCII.GetString(buffer, 0, bytesRead - 1); // skip \n
+                //    else result = "err";
+                //}
+                //catch (Exception exception)
+                //{
+                //    result = exception.ToString();
+                //    if (socket != null)
+                //    {
+                //        socket.Close();
+                //        socket = null;
+                //    }
+                //}
             }
             return result;
         }
