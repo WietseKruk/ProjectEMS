@@ -1,35 +1,3 @@
-// Arduino Domotica server with Klik-Aan-Klik-Uit-controller 
-//
-// By Sibbele Oosterhaven, Computer Science NHL, Leeuwarden
-// V1.2, 16/12/2016, published on BB. Works with Xamarin (App: Domotica)
-//
-// Hardware: Arduino Uno, Ethernet shield W5100; RF transmitter on RFpin; debug LED for serverconnection on ledPin
-// The Ethernet shield uses pin 10, 11, 12 and 13
-// Use Ethernet2.h libary with the (new) Ethernet board, model 2
-// IP address of server is based on DHCP. No fallback to static IP; use a wireless router
-// Arduino server and smartphone should be in the same network segment (192.168.1.x)
-// 
-// Supported kaku-devices
-// https://eeo.tweakblogs.net/blog/11058/action-klik-aan-klik-uit-modulen (model left)
-// kaku Action device, old model (with dipswitches); system code = 31, device = 'A' 
-// system code = 31, device = 'A' true/false
-// system code = 31, device = 'B' true/false
-//
-// // https://eeo.tweakblogs.net/blog/11058/action-klik-aan-klik-uit-modulen (model right)
-// Based on https://github.com/evothings/evothings-examples/blob/master/resources/arduino/arduinoethernet/arduinoethernet.ino.
-// kaku, Action, new model, codes based on Arduino -> Voorbeelden -> RCsw-2-> ReceiveDemo_Simple
-//   on      off       
-// 1 2210415 2210414   replace with your own codes
-// 2 2210413 2210412
-// 3 2210411 2210410
-// 4 2210407 2210406
-//
-// https://github.com/hjgode/homewatch/blob/master/arduino/libraries/NewRemoteSwitch/README.TXT
-// kaku, Gamma, APA3, codes based on Arduino -> Voorbeelden -> NewRemoteSwitch -> ShowReceivedCode
-// 1 Addr 21177114 unit 0 on/off, period: 270us   replace with your own code
-// 2 Addr 21177114 unit 1 on/off, period: 270us
-// 3 Addr 21177114 unit 2 on/off, period: 270us
-
 // Supported KaKu devices -> find, download en install corresponding libraries
 #define unitCodeApa3      21177114  // replace with your own code
 #define unitCodeActionOld 31        // replace with your own code
@@ -47,24 +15,25 @@
 
 // Set Ethernet Shield MAC address  (check yours)
 byte mac[] = { 0x40, 0x6c, 0x8f, 0x36, 0x84, 0x8a }; // Ethernet adapter shield S. Oosterhaven
-int ethPort = 3300;                                  // Take a free port (check your router)
+int ethPort = 3300;  
 
+EthernetServer server(ethPort);              // EthernetServer instance (listening on port <ethPort>).
+Servo servo;                                 // Servo instantie
+dht DHT;                                    // DHT instantie
+LiquidCrystal_I2C lcd(0x27, 16, 2);          // 16 bij 2 LCD scherm instantie
+DS3231  rtc(A1, A2);                                // Take a free port (check your router)
 
 #define sensorPin    A0 //  Analog input pin (temp sensor)
 float sensorValue = 0;  // default sensor waarde
 bool on = false;
 bool done = false;
 bool showTime = false;
-
-EthernetServer server(ethPort);              // EthernetServer instance (listening on port <ethPort>).
-Servo servo;                                 // Servo instantie
-dht DHT;                                    // DHT instantie
-LiquidCrystal_I2C lcd(0x27, 16, 2);          // 16 bij 2 LCD scherm instantie
-DS3231  rtc(A1, A2);
+int startTime;
+int endTime;
 
 bool pinState = false;                   // Variable to store actual pin state
 bool pinChange = false;                  // Variable to store actual pin change
-                   
+int currentTime;                  
 void DisplayLcd(char t = 'i');
 String timeList[3];
 
@@ -125,7 +94,17 @@ void loop()
    // Do what needs to be done while the socket is connected.
    while (ethernetClient.connected()) 
    {   
-    DisplayLcd('d');
+    ParseTime();
+    
+    if(!done && !on)
+      DisplayLcd('d');
+    else if(on && !done) {
+      DisplayLcd('d');
+      CheckDone();
+    }
+    else if(!on && done)
+      DisplayLcd('k');
+
       // Execute when byte is received.
       while (ethernetClient.available())
       {  
@@ -158,35 +137,51 @@ void executeCommand(char cmd)
             break;*/
          case 't': //Zet koffieapparaat aan/uit
             Serial.println("showtime");
-//          OnOff();
-            ServoOn();
+            SetTime(1);
+            OnOff();
             break;
          default:
-            Serial.println("default");
+            Serial.println("initialised");
          }
 }
 
-//extra line
+void SetTime(int minutes) {
+  
+  startTime = timeList[1].toInt();
+  if (startTime >= (60 - minutes) && startTime != 0){
+    endTime = minutes - (60 - startTime);
+  }
+  else{
+    endTime = startTime + minutes;
+  }
+}
 
+void CheckDone(){
+  currentTime = timeList[1].toInt();
+  Serial.println(currentTime);
+  Serial.println(endTime);
+  if (endTime == currentTime){
+    done = true;
+    startTime = -1;
+    endTime = -1;
+    OnOff();
+    Serial.println("done");
+  }
+}
 
 void ParseTime() {
   String timestring = rtc.getTimeStr();
-  Serial.println(timestring);
+  //Serial.println(timestring);
   
   if(timestring != "") {
     timeList[0] = (timestring.substring(0, 2));
     timeList[1] = (timestring.substring(3, 5));
     timeList[2] = (timestring.substring(6, 8));
-    Serial.println(timeList[2].toInt());
+    //Serial.println(timeList[2].toInt());
   }
 }
 
-
-
-
 void DisplayLcd(char t = 'i'){
-
-  
   switch (t){
     case 'i':
       lcd.clear();
@@ -231,15 +226,15 @@ void DisplayLcd(char t = 'i'){
 
 void OnOff(){
   if (!on){
+    Serial.println("on");
     done = false;
     on = true;
-    DisplayLcd('a');
     ServoOn();
   }
   else if(on && done){
-    DisplayLcd('k');
-    ServoOn();
+    Serial.println("off");
     on = false;
+    ServoOn();
   }
 }
 
@@ -266,12 +261,6 @@ void intToCharBuf(int val, char buf[], int len)
    s = s + "\n";                           // add newline
    s.toCharArray(buf, len);                // convert string to char-buffer
 }
-
-
-
-
-
-
 
 // Convert IPAddress tot String (e.g. "192.168.1.105")
 String IPAddressToString(IPAddress address)
