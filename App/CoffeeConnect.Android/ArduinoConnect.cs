@@ -28,15 +28,14 @@ namespace CoffeeConnect.Droid
 
         public void ConnectToWifi(string ip, string port)
         {
-            //Only one command can be serviced in an timer tick, schedule from list
-           timerSockets = new System.Timers.Timer() { Interval = 1000, Enabled = false }; // Interval >= 750
+            timerSockets = new System.Timers.Timer() { Interval = 1000, Enabled = false }; // Interval >= 750
             timerSockets.Elapsed += (obj, args) =>
             {
 
                 if (socket != null) // only if socket exists
                 {
                     // Send a command to the Arduino server on every tick (loop though list)
-                    executeCommand("i"); // initialize connection
+                    
                 }
                 else timerSockets.Enabled = false;  // If socket broken -> disable timer
             };
@@ -51,7 +50,8 @@ namespace CoffeeConnect.Droid
                     socket.Connect(new IPEndPoint(IPAddress.Parse(ip), Convert.ToInt32(port)));
                     if (socket.Connected)
                     {
-                        timerSockets.Enabled = true; //Activate timer for communication with Arduino     
+                        timerSockets.Enabled = true; //Activate timer for communication with Arduino  
+                        executeCommand("i"); // initialize connection
                     }
                 }
                 catch (Exception exception)

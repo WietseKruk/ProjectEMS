@@ -24,6 +24,7 @@ namespace CoffeeConnect
         public DateTime alarm;
         public string sensortje = "geen sensorwaarde gevonden";
         public bool connectedCheck = false;
+        public bool timerStop = false;
         
 
         public MainPage()
@@ -49,6 +50,7 @@ namespace CoffeeConnect
 
          private void StartAlarm_Clicked(object sender, EventArgs e)
         {
+            timerStop = false;
             int hours = Convert.ToInt32(HoursBox.Text);
             int min = Convert.ToInt32(MinutesBox.Text);
             alarm = new DateTime(2020, 6, 11, hours, min, 0);
@@ -58,6 +60,11 @@ namespace CoffeeConnect
             AlarmText.IsVisible = true;
             Device.StartTimer(TimeSpan.FromSeconds(1), () =>
             {
+                if (timerStop)
+                {
+                    timerStop = false;
+                }
+
                 bool CheckTime = TimeCompare();
                 if (CheckTime)
                 {
@@ -77,6 +84,7 @@ namespace CoffeeConnect
 
         public void StopAlarm_OFF(object sender, EventArgs e)
         {
+            timerStop = true;
             DependencyService.Get<IAudio>().StopAudio();
             StopAlarm.IsVisible = false;
             StartAlarm.IsVisible = true;
