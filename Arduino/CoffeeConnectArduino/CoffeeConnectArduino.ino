@@ -49,11 +49,7 @@
 byte mac[] = { 0x40, 0x6c, 0x8f, 0x36, 0x84, 0x8a }; // Ethernet adapter shield S. Oosterhaven
 int ethPort = 3300;                                  // Take a free port (check your router)
 
-#define lowPin       5  // output, always LOW
-#define highPin      6  // output, always HIGH
-#define switchPin    7  // input, connected to some kind of inputswitch
-#define ledPin       8  // output, led used for "connect state": blinking = searching; continuously = connected
-#define infoPin      9  // output, more information
+
 #define sensorPin    A0 //  Analog input pin (temp sensor)
 float sensorValue = 0;  // default sensor waarde
 bool on = false;
@@ -78,20 +74,8 @@ void setup()
    //while (!Serial) { ; }               // Wait for serial port to connect. Needed for Leonardo only.
    delay(2000);
    Serial.println("Domotica project, CoffeeConnect Server\n");
-   
-   //Init I/O-pins
-   pinMode(switchPin, INPUT);            // hardware switch, for changing pin state
-   pinMode(lowPin, OUTPUT);
-   pinMode(highPin, OUTPUT);
-   pinMode(ledPin, OUTPUT);
-   pinMode(infoPin, OUTPUT);
-   
-   //Default states
-   digitalWrite(switchPin, HIGH);        // Activate pullup resistors (needed for input pin)
-   digitalWrite(lowPin, LOW);
-   digitalWrite(highPin, HIGH);
-   digitalWrite(ledPin, LOW);
-   digitalWrite(infoPin, LOW);
+
+  
 
     servo.attach(9);
     servo.write(0);
@@ -108,8 +92,6 @@ void setup()
       }
    }
    
-   Serial.print("LED (for connect-state and pin-state) on pin "); Serial.println(ledPin);
-   Serial.print("Input switch on pin "); Serial.println(switchPin);
    Serial.println("Ethernetboard connected (pins 10, 11, 12, 13 and SPI)");
    Serial.println("Connect to DHCP source in local network (blinking led -> waiting for connection)");
    
@@ -120,11 +102,11 @@ void setup()
    Serial.print("Listening address: ");
    Serial.print(Ethernet.localIP());
    
+   
    // for hardware debug: LED indication of server state: blinking = waiting for connection
    int IPnr = getIPComputerNumber(Ethernet.localIP());   // Get computernumber in local network 192.168.1.3 -> 3)
    Serial.print(" ["); Serial.print(IPnr); Serial.print("] "); 
    Serial.print("  [Testcase: telnet "); Serial.print(Ethernet.localIP()); Serial.print(" "); Serial.print(ethPort); Serial.println("]");
-   signalNumber(ledPin, IPnr);
 }
 
 void loop()
@@ -132,26 +114,24 @@ void loop()
     // Listen for incomming connection (app)
    EthernetClient ethernetClient = server.available();
    if (!ethernetClient) {
-      blink(ledPin);
       DisplayLcd('i');
       delay(1000);
       return; // wait for connection and blink LED
    }
 
    Serial.println("Application connected");
-   digitalWrite(ledPin, LOW);
    delay(2000);
 
    // Do what needs to be done while the socket is connected.
    while (ethernetClient.connected()) 
    {   
+    DisplayLcd('d');
       // Execute when byte is received.
       while (ethernetClient.available())
       {  
-        //DisplayLcd('d');
          char inByte = ethernetClient.read();   // Get byte from the client. 
          if(inByte != NULL) 
-          executeCommand(inByte);                // Wait for command to execute
+         executeCommand(inByte);                // Wait for command to execute
          inByte = NULL;                         // Reset the read byte.
          delay(500);
          
@@ -189,16 +169,19 @@ void executeCommand(char cmd)
 //extra line
 
 
-void parseTime() {
+void ParseTime() {
   String timestring = rtc.getTimeStr();
-  Serial.print(timestring);
+  Serial.println(timestring);
   
   if(timestring != "") {
     timeList[0] = (timestring.substring(0, 2));
     timeList[1] = (timestring.substring(3, 5));
     timeList[2] = (timestring.substring(6, 8));
+    Serial.println(timeList[2].toInt());
   }
 }
+
+
 
 
 void DisplayLcd(char t = 'i'){
@@ -262,9 +245,9 @@ void OnOff(){
 
 void ServoOn(){
   servo.write(40);
-  delay(300);
+  delay(500);
   servo.write(0);
-  delay(300);
+  delay(500);
 }
 // read value from pin pn, return value is mapped between 0 and mx-1
 int readSensor(int pn, int mx)
@@ -286,27 +269,9 @@ void intToCharBuf(int val, char buf[], int len)
 
 
 
-// blink led on pin <pn>
-void blink(int pn)
-{
-  digitalWrite(pn, HIGH); 
-  delay(100); 
-  digitalWrite(pn, LOW); 
-  delay(100);
-}
 
-// Visual feedback on pin, based on IP number, used for debug only
-// Blink ledpin for a short burst, then blink N times, where N is (related to) IP-number
-void signalNumber(int pin, int n)
-{
-   int i;
-   for (i = 0; i < 30; i++)
-       { digitalWrite(pin, HIGH); delay(20); digitalWrite(pin, LOW); delay(20); }
-   delay(1000);
-   for (i = 0; i < n; i++)
-       { digitalWrite(pin, HIGH); delay(300); digitalWrite(pin, LOW); delay(300); }
-    delay(1000);
-}
+
+
 
 // Convert IPAddress tot String (e.g. "192.168.1.105")
 String IPAddressToString(IPAddress address)
