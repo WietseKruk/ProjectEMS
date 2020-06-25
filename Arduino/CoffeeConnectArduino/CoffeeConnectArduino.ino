@@ -1,8 +1,3 @@
-// Supported KaKu devices -> find, download en install corresponding libraries
-#define unitCodeApa3      21177114  // replace with your own code
-#define unitCodeActionOld 31        // replace with your own code
-#define unitCodeActionNew 2210406   // replace with your own code
-
 // Include files.
 #include <Wire.h>
 #include <SPI.h>                  // Ethernet shield uses SPI-interface
@@ -39,18 +34,16 @@ String timeList[3];
 
 void setup()
 {
-   Serial.begin(9600);
+   Serial.begin(9600); // set baut rate to 9600
    //while (!Serial) { ; }               // Wait for serial port to connect. Needed for Leonardo only.
-   delay(2000);
+   delay(2000); // give it some time to start up
    Serial.println("Domotica project, CoffeeConnect Server\n");
 
-  
-
-    servo.attach(9);
-    servo.write(0);
-    rtc.begin();
-    lcd.init();
-    lcd.backlight();
+   servo.attach(9); // attatch servo on pin 9
+   servo.write(0); // set angle to 0
+   rtc.begin(); // start real time clock
+   lcd.init(); // initialise the lcd
+   lcd.backlight(); // turn on backlight lcd
 
     
    //Try to get an IP address from the DHCP server.
@@ -82,8 +75,8 @@ void loop()
 {
     // Listen for incomming connection (app)
    EthernetClient ethernetClient = server.available();
-   if (!ethernetClient) {
-      DisplayLcd('i');
+   if (!ethernetClient) { // if not connected with mobile app
+      DisplayLcd('i'); // display IP
       delay(1000);
       return; // wait for connection and blink LED
    }
@@ -92,9 +85,9 @@ void loop()
    delay(2000);
 
    // Do what needs to be done while the socket is connected.
-   while (ethernetClient.connected()) 
+   while (ethernetClient.connected()) // while connected
    {   
-    ParseTime();
+    ParseTime(); // parse time from rtc
     
     if(!done && !on)
       DisplayLcd('d');
@@ -106,7 +99,7 @@ void loop()
       DisplayLcd('k');
 
       // Execute when byte is received.
-      while (ethernetClient.available())
+      while (ethernetClient.available()) // wait for command
       {  
          char inByte = ethernetClient.read();   // Get byte from the client. 
          if(inByte != NULL) 
@@ -129,9 +122,9 @@ void executeCommand(char cmd)
 
          // Command protocol
          //Serial.print("["); Serial.print(cmd); Serial.print("] -> ");
-         switch (cmd) {
+         switch (cmd) { // disabled due to not being needed atm, can be uncommented to send 
          /*case 'a': // Report sensor value to the app  
-            intToCharBuf(66.6, buf, 4);                // convert to charbuffer
+            intToCharBuf(sensorPin, buf, 4);                // convert to charbuffer
             server.write(buf, 4);                             // response is always 4 chars (\n included)
             Serial.print("Sensor: "); Serial.println(buf);
             break;*/
