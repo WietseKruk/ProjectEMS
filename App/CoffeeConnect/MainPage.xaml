@@ -12,7 +12,7 @@
     <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
         <StackLayout x:Name="IsConnected" IsVisible="true">
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="1">
-                <Entry Text="192.168.178.37" FontSize="20" WidthRequest="140" x:Name="ipBox" Keyboard="Numeric"></Entry>
+                <Entry Text="192.168.178.327" FontSize="20" WidthRequest="170" x:Name="ipBox" Keyboard="Numeric"></Entry>
                 <Label Text="-" FontSize="30"></Label>
                 <Entry Text="3300" FontSize="20" WidthRequest="100" x:Name="portBox" Keyboard="Numeric"></Entry>
             </StackLayout>
